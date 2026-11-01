@@ -27,17 +27,31 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool libtool-bin \
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf autoconf-archive automake m4 gettext libtool libtool-bin \
             pkg-config zlib1g-dev libncurses-dev libncursesw5-dev \
-            cmake libffi-dev libssl-dev automake
+            cmake libffi-dev libssl-dev
+
+      - name: Fix libtool aclocal macros for libffi
+        run: |
+          # p4a's libffi recipe runs autogen.sh/autoreconf, which failed
+          # with "possibly undefined macro: LT_SYS_SYMBOL_USCORE" because
+          # libtool's m4 macros were not on aclocal's search path.
+          sudo cp /usr/share/libtool/m4/*.m4 /usr/share/aclocal/ 2>/dev/null || true
+          sudo cp /usr/share/aclocal/*.m4 /usr/local/share/aclocal/ 2>/dev/null || true
+          ls /usr/share/aclocal/ | grep -i libtool || true
 
       - name: Install Buildozer and pinned Cython
         run: |
           python3 -m pip install --upgrade pip
           # Cython < 3 is required by current python-for-android practice
           pip install "Cython<3.0" buildozer
+          # Use the newest python-for-android, whose libffi recipe is
+          # newer than the one bundled with an old Buildozer install.
+          pip install --upgrade python-for-android || true
 
       - name: Build APK (debug)
+        env:
+          ACLOCAL_PATH: /usr/share/aclocal:/usr/local/share/aclocal
         run: |
           # Buildozer's first run downloads the Android SDK and prompts
           # to accept its licences; on a non-interactive runner the
