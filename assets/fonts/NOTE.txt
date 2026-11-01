@@ -1,0 +1,1 @@
+Fonts: no bundled font file is required. The game uses pygame Font(None), i.e. the system/default font, so no licensed font is redistributed.
