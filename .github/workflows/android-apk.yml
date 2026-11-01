@@ -39,7 +39,11 @@ jobs:
 
       - name: Build APK (debug)
         run: |
-          buildozer android debug
+          # Buildozer's first run downloads the Android SDK and prompts
+          # to accept its licences; on a non-interactive runner the
+          # default answer is No, which previously failed the build.
+          # Piping "yes" accepts those licences.
+          yes | buildozer android debug
           ls -lh bin/ || true
 
       - name: Upload APK artifact
