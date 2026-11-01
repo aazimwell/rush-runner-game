@@ -45,9 +45,11 @@ jobs:
           python3 -m pip install --upgrade pip
           # Cython < 3 is required by current python-for-android practice
           pip install "Cython<3.0" buildozer
-          # Use the newest python-for-android, whose libffi recipe is
-          # newer than the one bundled with an old Buildozer install.
-          pip install --upgrade python-for-android || true
+          # NOTE: do NOT upgrade python-for-android here. Run #6 showed
+          # that the upgraded p4a breaks at "pip install -U pip" inside
+          # its build venv (BuildDependencyInstallError removed from
+          # newer pip), while the Buildozer-bundled p4a got past that
+          # step in earlier runs.
 
       - name: Build APK (debug)
         env:
